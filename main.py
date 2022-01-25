@@ -16,6 +16,10 @@ def parse_json(filename: str) -> Dict[str, List[str]]:
     words: Dict[str, List[str]] = {}
 
 
+
+    return words
+
+
 def main() -> None:
     if len(sys.argv) < 2:
         print("Player count not specified!")
