@@ -12,10 +12,11 @@ def clear_console() -> None:
     os.system(command)
 
 
-def fake_artist_goes_to_ny(players: int, words: Dict[str, List[str]],
+def fake_artist_goes_to_ny(players: int, words: List[Dict[str, str]],
                            gui: bool = False) -> None:
-    category = choice(list(words))
-    word = choice(words[category])
+    chosen = choice(words)
+    category = chosen["category"]
+    word = chosen["text"]
     impostor = randrange(players)
 
     for i in range(players):
@@ -23,27 +24,27 @@ def fake_artist_goes_to_ny(players: int, words: Dict[str, List[str]],
         input("Press enter to see your role...")
         clear_console()
         if i == impostor:
-            print("You are the FAKE")
+            print("You are the FAKE\n")
         else:
             print("You are an ARTIST",
-                  f"The word is {word.upper()}.")
+                  f"The word is {word.upper()}.\n", sep='\n')
         input("Press enter to confirm...")
         clear_console()
-    print(f"Category is... {category.upper()}!")
+    print(f"Category is... {category.upper()}!\n")
+    input("Press enter to exit...")
+    words.remove(chosen)
+    save_words("shortened.json", words)
 
 
-def parse_json(filename: str) -> Dict[str, List[str]]:
+def parse_json(filename: str) -> List[Dict[str, str]]:
     with open(filename, "r") as f:
         words = load(f)
     return words
 
 
-def test_words(filename: str) -> None:
-    words = {
-        "food": ["Pizza", "Croissant", "Spaghetti"]
-    }
+def save_words(filename: str, to_save: List[Dict[str, str]]) -> None:
     with open(filename, "w") as f:
-        dump(words, f)
+        dump(to_save, f)
 
 
 def main() -> None:
