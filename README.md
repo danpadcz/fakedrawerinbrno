@@ -1,7 +1,7 @@
 # fakedrawerinbrno
 
-This is a python terminal implementation of the game "A fake artist goes to New York"
-I created this for me and my friends, but also as to try creating my first github project and just to mess around.
+This is a simple python terminal implementation of the game "A fake artist goes to New York".
+I created this for me and my friends and also as to try creating my first github project and just to mess around.
 
 I want to add a simple tkinter gui in the future.
 
