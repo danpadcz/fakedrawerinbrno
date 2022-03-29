@@ -5,6 +5,12 @@ I created this for me and my friends and also as to try creating my first github
 
 I want to add a simple tkinter gui in the future.
 
+## TODO
+
+- a simple gui
+- interface for adding words so I can give it to my friends :D
+
+
 ## Usage
 
 The script takes 2 arguments, first one is the amount of players and the second one is the path to the json file with the prompts
