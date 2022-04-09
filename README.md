@@ -3,7 +3,11 @@
 This is a simple python terminal implementation of the game "A fake artist goes to New York".
 I created this for me and my friends and also as to try creating my first github project and just to mess around.
 
-I want to add a simple tkinter gui in the future.
+## TODO
+
+- a simple gui
+- interface for adding words so I can give it to my friends :D
+
 
 ## Usage
 
