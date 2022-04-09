@@ -5,6 +5,7 @@ I created this for me and my friends and also as to try creating my first github
 
 ## TODO
 
+- update README.md for the division of code into 3 files
 - a simple gui
 - interface for adding words so I can give it to my friends :D
 
@@ -12,7 +13,7 @@ I created this for me and my friends and also as to try creating my first github
 ## Usage
 
 The script takes 2 arguments, first one is the amount of players and the second one is the path to the json file with the prompts
-So for example `python3 fakeDrawerInBrno.py 3 Words/words.json` starts a 3 player game with the json file at Words/words.json
+So for example `python3 fakeDrawerCLI.py 3 Words/words.json` starts a 3 player game with the json file at Words/words.json
 
 After the script finishes, it creates a copy of the used json file at the same place as the script, but without the word that was chosen for the game. The file will be called `shortened.json` so be careful that the script doesn't rewrite some of your data.
 
