@@ -1,34 +1,45 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
 	"os"
-	"bufio"
 
 	"github.com/alecthomas/kong"
 )
 
-var CLI struct {
-	CLI         bool
-	PlayerCount int
-	JsonFile    string
+type CLIParser struct {
+	GUI         bool   `help:"Run in GUI"`
+	PlayerCount int    `arg:"" short:"c" help:"Amount of players. Must be greater than 0"`
+	JsonFile    string `arg:"" short:"f" help:"Path to JSON file to be used for words" type:"existingfile"`
 }
 
 type words []map[string]string
 
 func main() {
-	err := kong.Parse(&CLI).Error
+	var cli CLIParser
+	err := kong.Parse(&cli, kong.Description("A game of lies and deceit... but with art!")).Error
 	if err != nil {
 		fmt.Println("Error occurred in parsing command line input")
 		os.Exit(1)
 	}
 
-	f, err := os.ReadFile(CLI.JsonFile)
+	if cli.PlayerCount <= 0 {
+		fmt.Println("Player count must be specified and larger than 0!")
+		os.Exit(1)
+	}
+	if cli.JsonFile == "" {
+		fmt.Println("Json file with words must be specified!")
+		os.Exit(1)
+	}
+
+	f, err := os.ReadFile(cli.JsonFile)
 	if err != nil {
 		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	var w words
@@ -37,7 +48,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	FakeDrawerInBrnoCLI(w, CLI.PlayerCount)
+	FakeDrawerInBrnoCLI(w, cli.PlayerCount)
 }
 
 func FakeDrawerInBrnoCLI(w words, playerCount int) error {
