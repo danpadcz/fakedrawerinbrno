@@ -74,3 +74,32 @@ func FakeDrawerInBrnoCLI(w words, playerCount int) error {
 	}
 	return nil
 }
+
+type Result struct {
+    Message string
+    Error error
+}
+
+func FakeDrawerInBrnoLogic(w words, playerCount int, out chan Result) {
+	defer close(out)
+	impostor := rand.Intn(playerCount)
+	selectedWord := rand.Intn(len(w))
+	category, catOk := w[selectedWord]["category"]
+	word, wordOk := w[selectedWord]["text"]
+
+
+	if !catOk || !wordOk {
+		out <- Result{Error: errors.New("invalid Json file format")}
+		return
+	}
+
+	out <- Result{Message: category}
+
+	for i := 0; i < playerCount; i++ {
+		if i == impostor {
+			out <- Result{Message: "You are the fake :)"}
+		} else {
+			out <- Result{Message: fmt.Sprintf("The word is: %s \n", word)}
+		}
+	}
+}
