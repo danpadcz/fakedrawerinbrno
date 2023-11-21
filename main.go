@@ -55,7 +55,7 @@ func FakeDrawerInBrnoCLI(w Words, playerCount int) error {
 	resultChan := make(chan result)
 	go FakeDrawerInBrnoLogic(w, playerCount, resultChan)
 
-	result, ok := <- resultChan
+	result, ok := <-resultChan
 	if !ok {
 		return errors.New("logic goroutine closed unexpectedly")
 	} else if result.Error != nil {
@@ -78,17 +78,24 @@ func FakeDrawerInBrnoCLI(w Words, playerCount int) error {
 }
 
 type result struct {
-    Message string
-    Error error
+	Message string
+	Error   error
 }
 
 func FakeDrawerInBrnoLogic(w Words, playerCount int, out chan result) {
 	defer close(out)
+	if len(w) == 0 {
+		out <- result{Error: errors.New("words map cannot be empty")}
+		return
+	}
+	if playerCount <= 0 {
+		out <- result{Error: errors.New("player count cannot be less than 1")}
+		return
+	}
 	impostor := rand.Intn(playerCount)
 	selectedWord := rand.Intn(len(w))
 	category, catOk := w[selectedWord]["category"]
 	word, wordOk := w[selectedWord]["text"]
-
 
 	if !catOk || !wordOk {
 		out <- result{Error: errors.New("invalid Json file format")}
