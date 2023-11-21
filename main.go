@@ -52,23 +52,25 @@ func main() {
 }
 
 func FakeDrawerInBrnoCLI(w words, playerCount int) error {
-	impostor := rand.Intn(playerCount)
-	selectedWord := rand.Intn(len(w))
-	category, catOk := w[selectedWord]["category"]
-	word, wordOk := w[selectedWord]["text"]
-	if !catOk || !wordOk {
-		return errors.New("invalid Json file format")
-	}
+	resultChan := make(chan Result)
+	go FakeDrawerInBrnoLogic(w, playerCount, resultChan)
 
-	for i := 0; i < playerCount; i++ {
+	result, ok := <- resultChan
+	if !ok {
+		return errors.New("logic goroutine closed unexpectedly")
+	} else if result.Error != nil {
+		return result.Error
+	}
+	category := result.Message
+
+	for result := range resultChan {
+		if result.Error != nil {
+			return result.Error
+		}
 		fmt.Printf("Hey there, press enter to view your role ;)")
 		bufio.NewReader(os.Stdin).ReadBytes('\n')
-		if i == impostor {
-			fmt.Printf("You are the fake :) \n")
-		} else {
-			fmt.Printf("The word is: %s \n", word)
-		}
-		fmt.Printf("Category is %s\nPress enter to leave...", category)
+		fmt.Println(result.Message)
+		fmt.Printf("\nCategory is %s\n\nPress enter to leave...", category)
 		bufio.NewReader(os.Stdin).ReadBytes('\n')
 		fmt.Print("\033[H\033[2J")
 	}
@@ -99,7 +101,7 @@ func FakeDrawerInBrnoLogic(w words, playerCount int, out chan Result) {
 		if i == impostor {
 			out <- Result{Message: "You are the fake :)"}
 		} else {
-			out <- Result{Message: fmt.Sprintf("The word is: %s \n", word)}
+			out <- Result{Message: fmt.Sprintf("The word is: %s", word)}
 		}
 	}
 }
