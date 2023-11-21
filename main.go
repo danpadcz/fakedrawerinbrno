@@ -8,6 +8,9 @@ import (
 	"math/rand"
 	"os"
 
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 	"github.com/alecthomas/kong"
 )
 
@@ -48,7 +51,64 @@ func main() {
 		fmt.Println(err)
 	}
 
-	FakeDrawerInBrnoCLI(w, cli.PlayerCount)
+	if cli.GUI {
+		if err := FakeDrawerInBrnoGUI(w, cli.PlayerCount); err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		if err := FakeDrawerInBrnoCLI(w, cli.PlayerCount); err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+// UI still very much placeholder, I want to add UI to add words,
+// make it nicer and less slideshow-like
+func FakeDrawerInBrnoGUI(w Words, playerCount int) error {
+	resultChan := make(chan result)
+	go FakeDrawerInBrnoLogic(w, playerCount, resultChan)
+
+	result, ok := <-resultChan
+	if !ok {
+		return errors.New("logic goroutine closed unexpectedly")
+	} else if result.Error != nil {
+		return result.Error
+	}
+	category := fmt.Sprintf("Category is: %s", result.Message)
+
+	a := app.New()
+	win := a.NewWindow("A fake artist in Brno")
+
+	title := widget.NewLabel("Hi!")
+	titleCat := widget.NewLabel("")
+	roleHidden := true
+	win.SetContent(container.NewVBox(
+		title,
+		titleCat,
+		widget.NewButton("Next screen!", func() {
+			if !roleHidden {
+				title.SetText("Hi!")
+				titleCat.SetText("")
+				roleHidden = true
+			} else {
+				result, ok = <-resultChan
+				if !ok {
+					win.Close()
+				} else if result.Error != nil {
+					ok = false
+					win.Close()
+				} else if roleHidden {
+					title.SetText(result.Message)
+					titleCat.SetText(category)
+
+					roleHidden = false
+				}
+			}
+		}),
+	))
+	win.ShowAndRun()
+
+	return nil
 }
 
 func FakeDrawerInBrnoCLI(w Words, playerCount int) error {
@@ -70,7 +130,7 @@ func FakeDrawerInBrnoCLI(w Words, playerCount int) error {
 		fmt.Printf("Hey there, press enter to view your role ;)")
 		bufio.NewReader(os.Stdin).ReadBytes('\n')
 		fmt.Println(result.Message)
-		fmt.Printf("\nCategory is %s\n\nPress enter to leave...", category)
+		fmt.Printf("\nCategory is: %s\n\nPress enter to leave...", category)
 		bufio.NewReader(os.Stdin).ReadBytes('\n')
 		fmt.Print("\033[H\033[2J")
 	}
