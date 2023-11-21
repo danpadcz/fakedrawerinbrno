@@ -17,7 +17,7 @@ type CLIParser struct {
 	JsonFile    string `arg:"" short:"f" help:"Path to JSON file to be used for words" type:"existingfile"`
 }
 
-type words []map[string]string
+type Words []map[string]string
 
 func main() {
 	var cli CLIParser
@@ -42,7 +42,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var w words
+	var w Words
 	err = json.Unmarshal(f, &w)
 	if err != nil {
 		fmt.Println(err)
@@ -51,8 +51,8 @@ func main() {
 	FakeDrawerInBrnoCLI(w, cli.PlayerCount)
 }
 
-func FakeDrawerInBrnoCLI(w words, playerCount int) error {
-	resultChan := make(chan Result)
+func FakeDrawerInBrnoCLI(w Words, playerCount int) error {
+	resultChan := make(chan result)
 	go FakeDrawerInBrnoLogic(w, playerCount, resultChan)
 
 	result, ok := <- resultChan
@@ -77,12 +77,12 @@ func FakeDrawerInBrnoCLI(w words, playerCount int) error {
 	return nil
 }
 
-type Result struct {
+type result struct {
     Message string
     Error error
 }
 
-func FakeDrawerInBrnoLogic(w words, playerCount int, out chan Result) {
+func FakeDrawerInBrnoLogic(w Words, playerCount int, out chan result) {
 	defer close(out)
 	impostor := rand.Intn(playerCount)
 	selectedWord := rand.Intn(len(w))
@@ -91,17 +91,17 @@ func FakeDrawerInBrnoLogic(w words, playerCount int, out chan Result) {
 
 
 	if !catOk || !wordOk {
-		out <- Result{Error: errors.New("invalid Json file format")}
+		out <- result{Error: errors.New("invalid Json file format")}
 		return
 	}
 
-	out <- Result{Message: category}
+	out <- result{Message: category}
 
 	for i := 0; i < playerCount; i++ {
 		if i == impostor {
-			out <- Result{Message: "You are the fake :)"}
+			out <- result{Message: "You are the fake :)"}
 		} else {
-			out <- Result{Message: fmt.Sprintf("The word is: %s", word)}
+			out <- result{Message: fmt.Sprintf("The word is: %s", word)}
 		}
 	}
 }
