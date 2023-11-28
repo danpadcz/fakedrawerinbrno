@@ -79,15 +79,15 @@ func FakeDrawerInBrnoGUI(w Words, playerCount int) error {
 	a := app.New()
 	win := a.NewWindow("A fake artist in Brno")
 
-	title := widget.NewLabel("Hi!")
+	title := widget.NewLabel("Hey there player, press ok to view your role!")
 	titleCat := widget.NewLabel("")
 	roleHidden := true
 	win.SetContent(container.NewVBox(
 		title,
 		titleCat,
-		widget.NewButton("Next screen!", func() {
+		widget.NewButton("Ok!", func() {
 			if !roleHidden {
-				title.SetText("Hi!")
+				title.SetText("Hey there player, press ok to view your role!!")
 				titleCat.SetText("")
 				roleHidden = true
 			} else {
@@ -127,12 +127,12 @@ func FakeDrawerInBrnoCLI(w Words, playerCount int) error {
 		if result.Error != nil {
 			return result.Error
 		}
-		fmt.Printf("Hey there, press enter to view your role ;)")
+		fmt.Print("\033[H\033[2J")
+		fmt.Printf("Hey there, press enter to view your role ;)\n")
 		bufio.NewReader(os.Stdin).ReadBytes('\n')
 		fmt.Println(result.Message)
 		fmt.Printf("\nCategory is: %s\n\nPress enter to leave...", category)
 		bufio.NewReader(os.Stdin).ReadBytes('\n')
-		fmt.Print("\033[H\033[2J")
 	}
 	return nil
 }
