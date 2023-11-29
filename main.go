@@ -81,27 +81,31 @@ func FakeDrawerInBrnoGUI(w Words, playerCount int) error {
 
 	title := widget.NewLabel("Hey there player, press ok to view your role!")
 	titleCat := widget.NewLabel("")
-	roleHidden := true
+	nextIterShowsRole := true
 	win.SetContent(container.NewVBox(
 		title,
 		titleCat,
 		widget.NewButton("Ok!", func() {
-			if !roleHidden {
-				title.SetText("Hey there player, press ok to view your role!!")
+			if !nextIterShowsRole {
+				if playerCount > 0 {
+					title.SetText("Hey there player, press ok to view your role!!")
+				} else {
+					title.SetText("Enjoy the game!")
+				}
 				titleCat.SetText("")
-				roleHidden = true
+				nextIterShowsRole = true
 			} else {
 				result, ok = <-resultChan
 				if !ok {
 					win.Close()
 				} else if result.Error != nil {
-					ok = false
 					win.Close()
-				} else if roleHidden {
+				} else if nextIterShowsRole {
 					title.SetText(result.Message)
 					titleCat.SetText(category)
 
-					roleHidden = false
+					nextIterShowsRole = false
+					playerCount -= 1
 				}
 			}
 		}),
