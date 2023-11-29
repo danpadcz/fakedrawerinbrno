@@ -5,8 +5,8 @@ I created this for me and my friends and also as to try creating my first github
 
 ## TODO
 
-- a simple gui
-- interface for adding words so I can give it to my friends :D
+- gui interface for adding words so I can give it to my friends
+- making the gui an easy to launch app
 
 
 ## JSON file format
