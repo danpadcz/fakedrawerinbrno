@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -16,6 +17,7 @@ import (
 )
 
 type CLIParser struct {
+	// Run struct{} `default:"1" cmd:"" help:"Run the fake drawer app"`
 	Play PlayParser `cmd:"" help:"Play A fake drawer in Brno"`
 	Add  AddParser  `cmd:"" help:"Add words to JSON file to be used in runs of the game"`
 }
@@ -63,7 +65,7 @@ func (p *PlayParser) Run(ctx *kong.Context) error {
 	}
 
 	if p.GUI {
-		if err := FakeDrawerInBrnoGUI(w, p.PlayerCount); err != nil {
+		if err := FakeDrawerInBrnoGUI(w, p.PlayerCount, app.New()); err != nil {
 			return err
 		}
 	} else {
@@ -101,7 +103,10 @@ func saveToJsonFile(path string, w Words) error {
 }
 
 func (a *AddParser) Run(ctx *kong.Context) error {
-	return addWordsToJsonCLI(a.JsonFile)
+	if a.GUI {
+		return addWordsToJSONGUI(a.JsonFile, app.New())
+	}
+	return addWordsToJSONCLI(a.JsonFile)
 }
 
 func loadCategories(w Words) []string {
@@ -119,7 +124,65 @@ func loadCategories(w Words) []string {
 	return result
 }
 
-func addWordsToJsonCLI(path string) error {
+func addWordsToJSONGUI(path string, a fyne.App) error {
+	w, err := loadJsonFile(path)
+	if err != nil {
+		return err
+	}
+
+	win := a.NewWindow("A fake artist in Brno word adder")
+	categories := widget.NewLabel(fmt.Sprintf("Categories in inputed JSON file: %s", loadCategories(w)))
+	addWordQuestion := widget.NewLabel("Do you want to add another word?")
+	wordTitle := widget.NewLabel("Enter word:")
+	wordEntry := widget.NewEntry()
+	catTitle := widget.NewLabel("Enter category of word:")
+	catEntry := widget.NewEntry()
+	winContainer := container.NewVBox()
+	entryContainer := container.NewVBox()
+
+	confirmationContainer := container.NewVBox(
+		addWordQuestion,
+		container.NewHBox(
+			widget.NewButton("Yes", func() {
+				winContainer.RemoveAll()
+				winContainer.Add(entryContainer)
+			}),
+			widget.NewButton("No", func() {
+				winContainer.RemoveAll()
+				if err = saveToJsonFile(path, w); err != nil {
+					winContainer.Add(widget.NewLabel("Failed to save JSON file!"))
+					winContainer.Add(widget.NewLabel(err.Error()))
+				} else {
+					winContainer.Add(widget.NewLabel("Successfully saved words to JSON file!"))
+				}
+				winContainer.Add(widget.NewButton("Close", win.Close))
+			})))
+	enterButton := widget.NewButton("Enter", func() {
+		if strings.TrimSpace(catEntry.Text) == "" || strings.TrimSpace(wordEntry.Text) == "" {
+			winContainer.Add(widget.NewLabel("Entry boxes cannot be empty!\nPlease fill out both boxes and try again"))
+		} else {
+			w = append(w,
+				Word{
+					Category: strings.TrimSpace(catEntry.Text),
+					Word:     strings.TrimSpace(wordEntry.Text)})
+			catEntry.SetText("")
+			wordEntry.SetText("")
+			winContainer.RemoveAll()
+			winContainer.Add(confirmationContainer)
+		}
+	})
+
+	entryContainer = container.NewVBox(categories, wordTitle, wordEntry, catTitle, catEntry, enterButton)
+
+	winContainer.Add(entryContainer)
+
+	win.SetContent(winContainer)
+	win.ShowAndRun()
+
+	return err
+}
+
+func addWordsToJSONCLI(path string) error {
 	w, err := loadJsonFile(path)
 	if err != nil {
 		return err
@@ -167,7 +230,7 @@ func addWordsToJsonCLI(path string) error {
 	return nil
 }
 
-func FakeDrawerInBrnoGUI(w Words, playerCount int) error {
+func FakeDrawerInBrnoGUI(w Words, playerCount int, a fyne.App) error {
 	resultChan := make(chan result)
 	go FakeDrawerInBrnoLogic(w, playerCount, resultChan)
 
@@ -179,7 +242,6 @@ func FakeDrawerInBrnoGUI(w Words, playerCount int) error {
 	}
 	category := fmt.Sprintf("Category is: %s", result.Message)
 
-	a := app.New()
 	win := a.NewWindow("A fake artist in Brno")
 
 	title := widget.NewLabel("Hey there player, press ok to view your role!")
