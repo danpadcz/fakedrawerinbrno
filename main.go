@@ -134,8 +134,16 @@ func (a *AppParser) Run(ctx *kong.Context) error {
 			}),
 
 			widget.NewButtonWithIcon("Game help", theme.HelpIcon(), func() {
-				e := dialog.NewError(errors.ErrUnsupported, win)
-				e.Show()
+				info := dialog.NewInformation("How to use",
+					"This is a game moderator for the board game A fake artist goes to New York.\nThe concept of the game is that out of all players there is one"+
+						" fake artist and the rest of the players are normal artists.\nAll players get a word category and only the normal artists get"+
+						" the actual word they have to draw.\nThen all players take turns drawing maximum one line on a shared piece of paper twice.\nThat is"+
+						" there will be two rounds of drawing one line. After these two rounds finish\neverybody votes on who they think is the fake. Then the fake"+
+						" reveals themselves and guesses what the word was.\nThe fake wins if they aren't guessed by the other players or if they guess the correct word."+
+						"\n\nThis app uses JSON files to load the words for the game. \nTo play the game or add words to a json file, you will be prompted\n"+
+						"to select a fitting JSON file.",
+					win)
+				info.Show()
 			}),
 
 			widget.NewButtonWithIcon("Quit", theme.CancelIcon(), app.Quit)))
